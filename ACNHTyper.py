@@ -1,13 +1,14 @@
 import socket
 import time
-import threading
+
 
 dc = [90, 415]  # default coordinates
 dca = [95, 55]  # default coordinates advancement
-usloc = "1234567890-qwertyuiop/asdfghjkl:'zxcvbnm,.?!aaaaaa     "  # us list of chars, ! last
-uslocc = "#[]$%^&*()_QWERTYUIOP@ASDFGHJKL;\"ZXCVBNM<>+=aaaaaa     "  # us list of chars CAPITAL, = last
+usloc = "1234567890-qwertyuiop/asdfghjkl:'zxcvbnm,.?!aaaaaa     "  # us list of chars
+uslocc = "#[]$%^&*()_QWERTYUIOP@ASDFGHJKL;\"ZXCVBNM<>+=aaaaaa     "  # us list of chars CAPITAL
+uslocs = "1234567890-!@#$%^&*()_~`=\\+{}|[]a<>;:\"',.?/aaaaaaa     "  # us list of chars symbols
 maxn = 16  # 16 is the max that the chat can handle if you put the biggest char. for example 24 is the max if you use no
-# rmal sized chars. if someone is able to calculate this in some way please point it out.
+# rmal sized chars. if someone is able to calculate this in some way please point it out.s
 
 
 def sendCommand(switch, content):
@@ -20,20 +21,24 @@ def split(word):
 
 
 def mainstuff(phrase, coordadv, defcoord):
-    capitalized = []
     n = []
     dcclist = []
     uslocaaal = split(usloc)  # us list of chars as an actual list
     usloccaaal = split(uslocc)  # us list of chars CAPITAL as an actual list
+    uslocsaaal = split(uslocs)  # us list of chars symbols as an actual list
     splitted = split(phrase)  # separates every letter
     for char in splitted:  # for every letter
         try:
             n.append(uslocaaal.index(char))  # add the placement number of the letter in n
-            capitalized.append("0")
         except ValueError:
-            capitalized.append("1")
-            n.append(45)
-            n.append(usloccaaal.index(char))
+            try:
+                usloccaaal.index(char)
+                n.append(45)
+                n.append(usloccaaal.index(char))
+            except ValueError:
+                n.append(47)
+                n.append(uslocsaaal.index(char))
+                n.append(46)
     for number in n:  # for every number in n
         column = defcoord[1]
         row = defcoord[0]
@@ -53,7 +58,7 @@ def mainstuff(phrase, coordadv, defcoord):
 
 def send(switch, positions):
     sendCommand(switch, "click R")
-    time.sleep(.8)
+    time.sleep(.7)
     for i in range(0, len(positions), 2):
         sendCommand(switch, "touch " + '{0} {1}'.format(positions[i], positions[i + 1]))
     sendCommand(switch, "click PLUS")
@@ -66,10 +71,11 @@ sendCommand(s, "configure pollRate 50")
 while True:
     inp = input("Things you want to write:  ")
     inputs = [inp[i:i + maxn] for i in range(0, len(inp), maxn)]
+    poopcode = 0
     for inp in inputs:
+        poopcode += 1
         dcc = mainstuff(inp, dca, dc)
-        thread = threading.Thread(target=send(s, dcc))
-        thread.start()
-        thread.join()
+        send(s, dcc)
         sendCommand(s, "click PLUS")
-        time.sleep(2.8)
+        if not len(inputs) == 1 and not poopcode == len(inputs):
+            time.sleep(2.8)
