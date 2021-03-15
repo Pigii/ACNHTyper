@@ -1,6 +1,7 @@
+import tkinter as tk
 import socket
 import time
-
+import threading
 
 dc = [90, 415]  # default coordinates
 dca = [95, 55]  # default coordinates advancement
@@ -8,7 +9,8 @@ usloc = "1234567890-qwertyuiop/asdfghjkl:'zxcvbnm,.?!aaaaaa     "  # us list of 
 uslocc = "#[]$%^&*()_QWERTYUIOP@ASDFGHJKL;\"ZXCVBNM<>+=aaaaaa     "  # us list of chars CAPITAL
 uslocs = "1234567890-!@#$%^&*()_~`=\\+{}|[]a<>;:\"',.?/aaaaaaa     "  # us list of chars symbols
 maxn = 16  # 16 is the max that the chat can handle if you put the biggest char. for example 24 is the max if you use no
-# rmal sized chars. if someone is able to calculate this in some way please point it out.s
+# rmal sized chars. if someone is able to calculate this in some way please point it out
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
 def sendCommand(switch, content):
@@ -64,18 +66,69 @@ def send(switch, positions):
     sendCommand(switch, "click PLUS")
 
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(("192.168.1.203", 6000))
-sendCommand(s, "configure pollRate 50")
+def connect():
+    conn.config(state="disabled")
+    text.configure(text=f"Trying to connect")
+    ip = ipinput.get()
+    try:
+        s.connect((ip, 6000))
+        sendCommand(s, "configure pollRate 50")
+        textentry.configure(state="normal")
+        sen.config(state="normal")
+        text.configure(text="Connection succeeded")
+    except Exception:
+        text.configure(text="Conenction error")
+        textentry.configure(state="disabled")
+        sen.config(state="disabled")
+    conn.config(state="normal")
 
-while True:
-    inp = input("Things you want to write:  ")
+
+def work():
+    sen.config(state="disabled")
+    inp = textentry.get()
     inputs = [inp[i:i + maxn] for i in range(0, len(inp), maxn)]
-    poopcode = 0
+    num = 0
     for inp in inputs:
-        poopcode += 1
+        num += 1
         dcc = mainstuff(inp, dca, dc)
         send(s, dcc)
         sendCommand(s, "click PLUS")
-        if not len(inputs) == 1 and not poopcode == len(inputs):
+        text.configure(text=f"Sending message [{num}/{len(inputs)}]")
+        if not len(inputs) == 1 and not num == len(inputs):
             time.sleep(2.8)
+    text.configure(text=f"Sent")
+    sen.config(state="normal")
+
+
+def getip():
+    threading.Thread(target=connect, daemon=True).start()
+
+
+def sendtext():
+    threading.Thread(target=work, daemon=True).start()
+
+
+root = tk.Tk()
+root.title("ACNHTyper")
+
+mainframe = tk.Frame(root)
+mainframe.grid(column=0, row=0)
+root.resizable(False, False)
+
+conn = tk.Button(mainframe, text="Connect", command=getip)
+conn.grid(column=3, row=1)
+tk.Label(mainframe, text="Ip:").grid(column=1, row=1)
+tk.Label(mainframe, text="Text:").grid(column=1, row=2)
+text = tk.Label(mainframe, text="")
+text.grid(column=2, row=3)
+ipinput = tk.Entry(mainframe)
+ipinput.grid(column=2, row=1)
+textentry = tk.Entry(mainframe)
+textentry.grid(column=2, row=2)
+textentry.configure(state="disabled")
+sen = tk.Button(mainframe, text="Send", command=sendtext)
+sen.grid(column=3, row=2)
+sen.config(state="disabled")
+for child in mainframe.winfo_children():
+    child.grid_configure(padx=7, pady=7)
+root.mainloop()
