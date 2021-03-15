@@ -16,7 +16,6 @@ sys-botbase and / or my program could cause errors or bugs in your nintendo swit
 2) set your layout to English (US)
 3) undock the switch
 4) disconnect every controller
-5) go at the line 68 of the code and change the ip
 6) run the progrm
 
 ## Feature list
